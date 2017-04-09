@@ -1,0 +1,79 @@
+
+Contract produces two types of EIC20 token, a stable token and an investor token.  The stable token is designed to be of equal value to a given currency.  The investor token is a more sensitive version of the exchange rate between the currency and ethereum token (ETH).  In essence, exchange rate risk is removed from the stable token and transfered to the investor token.  This affords stable token holders an asset with price stability and investor token holders with an asset with hightened sensitivity to changes in the exchange rate.  
+
+Calculation of the Investor price
+Investor price is a function of the exchange rate, the number of stable tokens, the number of investor tokens and the total amount of ETH held in the contract.  Formally it is defined as:-
+  
+XXXXXXXXXXXX
+
+Note that the investor price can go negative.  In this case, the price is set to zero and no investor tokens can be created or redeemed.  Stable tokens may still be redeemed but not created.  
+
+A zero investor price does not mean that investor tokens are worthless.  There is a non-zero probablility that the investor price will become positive in the future, allowing the investor token to be redeemed for ETH.  This future posibility of redemption has a value analogous to a financial (american) call option without expiry.  Whilst the investor price is negative, this option is out of the money and has an intrinsic value of 0, but has a positive time value.  
+
+Creation of tokens
+To create a stable token, simply send an amount of ETH from an address to the CreateStable() function in the uRock contract which, after a delay, will credit your address with (ETH sent)/Price stable tokens.  
+Similarly, to create an investor token, send an amount of ETH from an address to the CreateInvestor() function of the uRock contract which, after a delay, will credit address with (ETH sent)/InvestorPrice investor tokens.  
+
+Redemption of tokens
+To redeem a stable token, call the RedeemStable(value) function where value is the quantity of stable tokens you wish to redeem.  For ETH to be returned to an address there must be a quantity of stable coins registered to that address, and a small amount of ETH must be sent to the RedeemStable() to cover the cost of retreving a price quote from outside the ethereum blockchain.  Excess ETH sent to RedeemStable() will be immediatly returned to the calling address.  
+Similarly, to redeem an investor token, call the RedeemInvestor(value) function where value is the quantity of investor tokens you wish to redeem.  Again, some ETH must be sent to cover the cost of retreving data, and any overfunding will be immediatly returned.  
+
+
+Restrictions on creation of tokens
+==================================
+
+Investor tokens cannot be created when the price is below 0.  
+Stable tokens cannot be created when...
+
+Restrictions on redemption of tokens
+The only upper limit on the number of tokens that can be redeemed is the number of tokens owned.  A redemption limit could easily be bypassed by transfering tokens to multiple wallets.  The minter contract would have no way of knowing wether any addressed were controled by the same actor.  
+
+Investor tokens cannot be redeemed when the price is below 0
+
+Stable tokens cannot be redeemed when there is no longer any ETH backing them
+
+
+Source of exchange rate prices
+
+Method of price query
+The Pricer contract is designed to be upgradeable, i.e. a different Pricer contract can be substitued at a later date.  
+Quotes are provided by the Pricer contract which currently uses Oracelize to query the 24 hour volume weighted price from KRACKEN.  
+
+Oracelize was chosen as it is currently the easiest way to import off chain data.  
+
+KRACKEN (need to compaire to other exchanges) was chosen as it proves an open API with a 24 hour weighted average price.  Blended quotes from multiple exchanges would be prefereable, but oracelize currently only allows one URL to be called at a time.  
+
+The 24 hour volume weighted price is chosen as it is assumed to be unlikely that a single individual (or group) would be able to significantly influence an exchange for a period of a day.  If the current 24 hour volume weighted price were returned then it would be possible to predict the direction of future movements of the average price with some certainty.  The delaying of 24 hours allows for all currently known price information to be removed from the future quote. 
+ 
+For example, lets say the average price for the previous 6, 4 hour periods was X1, X2, X3, X4, X5, X6 so the 24 hour price is (X1+X2+X3+X4+X5+X6)/6.  In 4 hours time, the new price will be (X2+X2+X3+X4+X5+X7)/6 so the difference in price is (X7-X1)/6.  Imagine we know that X1=1,X2=2,X3=3,X4=4,X5=5 and X6=6 but we don't yet know X7.  For the 24 hour average price not to increase, the value of X7 would have to suddenly drop down to 1, which is unlikely given the latest price of X6=6.  
+
+As etherum matures, the delay time period can be reduced as exchange rates become more liquid and the ability for a single actor to influence prices reduces.  The Pricer contract can be replaced with a shorter delay, assuming that suitable data feeds are available.  
+
+====
+Price equivalence
+The current value of a stable coin token is equal to the current exchange price, even though the amount of ETH is returned on the basis of a quote in day ahead.  
+
+(for the rest of this document USD($) will be assumed, although any underlying currency is applicable)
+
+Other stable coins
+	Maker
+	Bitshare
+Simplicity
+
+Where this will fail
+
+
+Coverage ratio
+Similar to bank run
+
+
+Contract structure
+------------------
+StableCoin
+InvestorCoin
+
+Minter - 
+Kill function.  This halts all execution of the contract and lets all holders redeem their tokens at the last known exchange price which is fixed indefinitly.  If there is not enough ETH to support all claims at the given price then claims are paid pro-rata.  
+Pricer
+
+Pricer contract is designed to be upgradable by GENKI.  A new Pricer contract is created
