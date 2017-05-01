@@ -129,7 +129,7 @@ contract DSMath {
         return x >= y ? x : y;
     }
     
-     function parseInt(string _a, uint _b)  constant returns (uint) { //No writing to blockchain, so return constant
+     function parseInt(string _a, uint _b)  constant internal returns (uint) { //No writing to blockchain, so return constant
             bytes memory bresult = bytes(_a);
             uint mint = 0;
             bool decimals = false;
@@ -161,34 +161,34 @@ contract DSMath {
     uint8 constant WAD_Dec=18;
     uint128 constant WAD = 10 ** 18;
 
-    function parseInt128(string _a)  constant returns (uint) { //No writing to blockchain, so return constant
+    function parseInt128(string _a)  constant internal returns (uint) { //No writing to blockchain, so return constant
         return cast(parseInt( _a, WAD_Dec));
     }
 
-    function wadd(uint128 x, uint128 y) constant returns (uint128) {
+    function wadd(uint128 x, uint128 y) constant internal returns (uint128) {
         return hadd(x, y);
     }
 
-    function wsub(uint128 x, uint128 y) constant returns (uint128) {
+    function wsub(uint128 x, uint128 y) constant internal returns (uint128) {
         return hsub(x, y);
     }
 
-    function wmul(uint128 x, uint128 y) constant returns (uint128 z) {
+    function wmul(uint128 x, uint128 y) constant internal returns (uint128 z) {
         z = cast((uint256(x) * y + WAD / 2) / WAD);
     }
 
-    function wdiv(uint128 x, uint128 y) constant  returns (uint128 z) {
+    function wdiv(uint128 x, uint128 y) constant internal returns (uint128 z) {
         z = cast((uint256(x) * WAD + y / 2) / y);
     }
 
-    function wmin(uint128 x, uint128 y) constant returns (uint128) {
+    function wmin(uint128 x, uint128 y) constant internal returns (uint128) {
         return hmin(x, y);
     }
-    function wmax(uint128 x, uint128 y) constant returns (uint128) {
+    function wmax(uint128 x, uint128 y) constant internal returns (uint128) {
         return hmax(x, y);
     }
 
-    function wpow(uint128 x, uint64 n) constant  returns (uint128 z) {
+    function wpow(uint128 x, uint64 n) constant internal returns (uint128 z) {
         // This famous algorithm is called "exponentiation by squaring"
         // and calculates x^n with x as fixed-point and n as regular unsigned.
         //
@@ -215,8 +215,7 @@ contract DSMath {
         }
     }
 
-
-    function wstr(uint128 x) constant returns (string) {
+    function wstr(uint128 x) constant internal returns (string) {
         if (x == 0) return "0";
         uint j = x;
         uint len;//=0
@@ -237,13 +236,11 @@ contract DSMath {
             while (x != 0){
                 bstr[2+zeros+k--] = byte(48 + x % 10);
                 x /= 10;
-            }
-            
+            }            
             while (zeros != 0){
                 bstr[1+zeros] = byte(48);
                 zeros--;
             }
-            
             bstr[1]=byte(46); //"."
             bstr[0]=byte(48); //"0"
                 
@@ -258,10 +255,8 @@ contract DSMath {
                     bstr[k--] = byte(48 + x % 10);
                     x /= 10;
                 }
-
             }
         }
-        
         return string(bstr);
     }
     
@@ -284,14 +279,13 @@ contract DSMath {
         return string(bstr);        
     }
     
-    function TrimL0(string _a) constant returns (string){
+    function TrimL0(string _a) constant internal returns (string){
         return TrimL(_a,48);
     }
 
-    function TrimR0(string _a) constant returns (string){
+    function TrimR0(string _a) constant internal returns (string){
         return TrimR(_a,48);
     }
-
 
     function TrimR(string _a, bytes1 _char) constant internal returns (string){
         bytes memory bresult = bytes(_a);
@@ -312,24 +306,6 @@ contract DSMath {
         return string(bstr);
     }
     
-    function uint2str(uint i) internal constant returns (string){
-        if (i == 0) return "0";
-        uint j = i;
-        uint len;
-        while (j != 0){
-            len++;
-            j /= 10;
-        }
-        bytes memory bstr = new bytes(len);
-        uint k = len - 1;
-        while (i != 0){
-            bstr[k--] = byte(48 + i % 10);
-            i /= 10;
-        }
-        return string(bstr);
-    }
-    
-
     /*
     RAY math
      */
